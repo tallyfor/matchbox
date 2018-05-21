@@ -1,121 +1,24 @@
-# This is a fork to get Firebase v3 working for CLJS on the client and CLJ on the server
+# This is a fork to get cljsjs/firebase client v4.9 and Firebase-Admin 6.0.0 on the  server
 (the Android client support has not been looked at yet)
 
 Efforts have not been made to maintain backwards compatibility with v2 init and auth functions,
-as these changed dramatically on the upstream side and have new requirement for use.
+as these changed dramatically on the upstream side with the switch to Google ownership and have new requirement for use.
 However, all the regular data access and mutation functions should work as before.
+
+This is currently working in production with some hacks.
+
+See `matchbox.auth` for the hacked CLJS auth.  The goal is to make this more idomatic to the rest of the library.
+
+See `matchbox.core/init!` for a fairly smooth isomorphic init.
 
 ```
 [thosmos/matchbox "0.1.0-SNAPSHOT"]
 ```
 
-## Example web client code
-
-```clojure
-(defn setup-firebase! [reconciler]
-
-  (let [apikey "..."
-        app-domain "..."
-        app (m/init-web! apikey app-domain)
-        ref (.ref (js/firebase.database))]
-    (swap! ext-state assoc :firebase {:ref ref :app app})
-
-    (.onAuthStateChanged
-      (.auth app)
-      (fn [data]
-        (debug "AUTH DATA" data)
-
-        (if data
-          (do
-            (debug "onAuth" data)
-            (debug "AUTH UID" (.-uid data))
-            (debug "AUTH KEYS" (.keys js/Object data))
-            (om/merge! reconciler {:ui/auth data})
-            (listen-data ref data reconciler))
-          (do
-            (debug "deAuthed")
-            (om/merge! reconciler {:ui/auth nil
-                                   :ui/user-data nil})))))))
-
-(defn auth-facebook [cb]
-  (debug "NEW FACEBOOK AUTH")
-  (let [provider (doto (js/firebase.auth.FacebookAuthProvider.)
-                   (.addScope "email")
-                   (.addScope "user_friends"))]
-    (.then (.signInWithPopup (js/firebase.auth) provider) #(cb nil %) #(cb % nil))))  
-```
-
-
-## Example Server code
-```clojure
-(ns server.services.firebase
-  (:require [clojure.tools.logging :refer [debug info warn error]]
-            [server.services.datomic :refer [conn]]
-            [common.firebase :refer [ignite-keys hydrate-keys]]
-            [matchbox.core :as m])
-  (:import
-    (java.util HashMap)
-    (com.google.firebase FirebaseApp)
-    (com.google.firebase.database DatabaseReference FirebaseDatabase)))
-
-
-(defn setup-firebase! []
-  (let [app-domain "example-app-domain"
-        creds "/path/to/credentials/file"
-        app (m/init-server! app-domain creds)]
-    app))
-
-(defn start []
-  (let [app (or (first (FirebaseApp/getApps)) (setup-firebase!))
-        ref (.getReference (FirebaseDatabase/getInstance app))]
-    (update-firebase ref conn)
-    {:app app :ref ref}))    
-```
-
-
-
-## Utility functions added to `matchbox.utils`
-
-(defn ignite-key
-  "used by ignite-keys to transform a map key from clojure to firebase"
-  [[k v]]
-    (if
-      (keyword? k)
-      [(s/replace
-         (str (when (namespace k)
-                 (str (namespace k) "_"))
-                 (name k)) "." "-") v]
-      [(s/replace k "." "-") v]))
-
-(defn ignite-keys
-  "Recursively transform map keys from clojure namespaced keywords to firebase-friendly underscored strings."
-  [m]
-  (postwalk (fn [x] (if (map? x) (into {} (map ignite-key x)) x)) m))
-
-
-(defn hydrate-key
-  "used by hydrate-keys to transform a map key from firebase to clojure"
-  [[k v]]
-    (if (keyword? k)
-      (let [parsed #?(:cljs (js/parseInt (name k))
-                      :clj (try (Integer/parseInt (name k)) (catch NumberFormatException _ nil)))]
-        (if-not #?(:cljs (js/isNaN parsed)
-                   :clj (nil? parsed))
-          [parsed v]
-          [(keyword (s/replace-first (s/replace (name k) "/" "-") "_" "/")) v]))
-      [k v]))
-
-(defn hydrate-keys
-  "Recursively transform map keys from firebase-friendly underscored strings to clojure namespaced keywords."
-  [m]
-  (postwalk (fn [x] (if (map? x) (into {} (map hydrate-key x)) x)) m))
-
-
-```
-
 
 
 # Old README
+
 
 ![Matchbox - Firebase bindings for Clojure(script)](https://cloud.githubusercontent.com/assets/881351/6866974/0c503f46-d486-11e4-9b88-6e0c833afeb0.png)
 
