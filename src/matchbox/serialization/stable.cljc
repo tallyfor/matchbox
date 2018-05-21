@@ -2,8 +2,11 @@
   (:require
     [clojure.walk :as walk]
     [matchbox.serialization.keyword :as keyword]
+    ;[matchbox.serialization.serializer :refer [set-data-config!]]
+
     [linked.map]
-    [matchbox.utils :as utils])
+    ;[matchbox.utils :as utils]
+    )
   #?(:clj (:import (java.util HashMap ArrayList))))
 
 (defn map->linked [m]
@@ -22,5 +25,5 @@
 
 (def serialize keyword/serialize)
 
-(defn set-default! []
-  (utils/set-date-config! hydrate serialize))
+;(defn set-default! []
+;  (set-data-config! hydrate serialize))

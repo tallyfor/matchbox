@@ -4,7 +4,7 @@
                :clj [clojure.test :refer [deftest is]])
             [matchbox.core :as m]
             [matchbox.registry :as r]
-            [matchbox.testing :as mt]))
+            [matchbox.testing :as mt :refer [root-ref]]))
 
 (reset! r/unsubs {})
 
@@ -13,8 +13,8 @@
 (def a-3 (atom nil))
 (def a-4 (atom nil))
 
-(def r-1 (m/connect mt/db-uri :a))
-(def r-2 (m/connect mt/db-uri :b))
+(declare r-1)
+(declare r-2)
 
 (def callback-1 #(swap! a-1 inc))
 (def callback-2 #(swap! a-2 inc))
@@ -66,19 +66,26 @@
 (defonce f-1 (constantly 1))
 (defonce f-2 (constantly 2))
 
-(deftest auth-listener-test
-  (r/disable-auth-listeners!)
-  (is (empty? @r/auth-listeners))
+#?(:cljs
+  (deftest auth-listener-test
+   (r/disable-auth-listeners!)
+   (is (empty? @r/auth-listeners))
 
-  (r/register-auth-listener r-1 f-1 (#'m/wrap-auth-changed f-1))
-  (r/register-auth-listener r-1 f-2 (#'m/wrap-auth-changed f-2))
-  (r/register-auth-listener r-2 f-1 (#'m/wrap-auth-changed f-1))
-  (is (= 2 (count @r/auth-listeners)))
-  (is (= 3 (count (mapcat val @r/auth-listeners))))
+   (reset! r-1 (root-ref [:a]) ;(m/connect mt/db-uri :a)
+     )
+   (reset! r-2 (root-ref [:b]) ;(m/connect mt/db-uri :b)
+     )
 
-  (r/disable-auth-listener! r-2 f-1)
-  (is (= 2 (count (mapcat val @r/auth-listeners))))
 
-  (r/disable-auth-listeners!)
-  (is (= 0 (count (mapcat val @r/auth-listeners))))
-  (is (empty? @r/auth-listeners)))
+   (r/register-auth-listener r-1 f-1 (#'m/wrap-auth-changed f-1))
+   (r/register-auth-listener r-1 f-2 (#'m/wrap-auth-changed f-2))
+   (r/register-auth-listener r-2 f-1 (#'m/wrap-auth-changed f-1))
+   (is (= 2 (count @r/auth-listeners)))
+   (is (= 3 (count (mapcat val @r/auth-listeners))))
+
+   (r/disable-auth-listener! r-2 f-1)
+   (is (= 2 (count (mapcat val @r/auth-listeners))))
+
+   (r/disable-auth-listeners!)
+   (is (= 0 (count (mapcat val @r/auth-listeners))))
+   (is (empty? @r/auth-listeners))))

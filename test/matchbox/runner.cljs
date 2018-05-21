@@ -6,6 +6,7 @@
     [matchbox.core-test]
     [matchbox.registry-test]
     [matchbox.serialization-test]
-    [matchbox.utils-test]))
+    [matchbox.utils-test]
+    [matchbox.admin-test]))
 
 (doo-all-tests)

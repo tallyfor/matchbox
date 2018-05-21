@@ -1,6 +1,9 @@
 (ns matchbox.utils
   (:refer-clojure :exclude [prn])
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [matchbox.serialization.keyword :as keyword]
+            [matchbox.serialization.serializer :refer [set-data-config!]]
+            [clojure.walk :refer [prewalk postwalk]]))
 
 (defn kebab->underscore [keyword]
   (-> keyword name (str/replace "-" "_")))
@@ -21,26 +24,8 @@
     [(last args) (drop-last 2 args)]
     [nil args]))
 
-;;
 
-(defprotocol ISerializer
-  (hydrate [this x])
-  (serialize [this x])
-  (config! [this hydrate serialize]))
-
-(deftype Serializer
-  [#?(:clj ^:volatile-mutable hydrate :cljs ^:mutable hydrate)
-   #?(:clj ^:volatile-mutable serialize :cljs ^:mutable serialize)]
-  ISerializer
-  (hydrate [_ x] (hydrate x))
-  (serialize [_ x] (serialize x))
-  (config! [_ h s] (set! hydrate h) (set! serialize s)))
-
-(defn set-date-config! [hydrate serialize]
-  (-> ^Serializer
-      #?(:clj @(resolve 'matchbox.core/data-config)
-         :cljs matchbox.core/data-config)
-      (config! hydrate serialize)))
+;(set-data-config! keyword/hydrate keyword/serialize)
 
 #?(:clj (def repl-out *out*))
 
@@ -50,3 +35,38 @@
       [& args]
       (binding [*out* repl-out]
         (apply clojure.core/prn args))))
+
+
+(defn ignite-key
+  "used by ignite-keys to transform a map key from clojure to firebase"
+  [[k v]]
+  (if
+    (keyword? k)
+    [(str/replace
+       (str (when (namespace k)
+              (str (namespace k) "_"))
+         (name k)) "." "-") v]
+    [(str/replace k "." "-") v]))
+
+(defn ignite-keys
+  "Recursively transform map keys from clojure namespaced keywords to firebase-friendly underscored strings."
+  [m]
+  (postwalk (fn [x] (if (map? x) (into {} (map ignite-key x)) x)) m))
+
+
+(defn hydrate-key
+  "used by hydrate-keys to transform a map key from firebase to clojure"
+  [[k v]]
+  (if (keyword? k)
+    (let [parsed #?(:cljs (js/parseInt (name k))
+                    :clj (try (Integer/parseInt (name k)) (catch NumberFormatException _ nil)))]
+      (if-not #?(:cljs (js/isNaN parsed)
+                 :clj (nil? parsed))
+        [parsed v]
+        [(keyword (str/replace-first (str/replace (name k) "/" "-") "_" "/")) v]))
+    [k v]))
+
+(defn hydrate-keys
+  "Recursively transform map keys from firebase-friendly underscored strings to clojure namespaced keywords."
+  [m]
+  (postwalk (fn [x] (if (map? x) (into {} (map hydrate-key x)) x)) m))

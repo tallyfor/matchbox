@@ -1,19 +1,25 @@
-(defproject matchbox "0.0.10-SNAPSHOT"
+(defproject thosmos/matchbox "0.1.0-SNAPSHOT"
   :description "Firebase bindings for Clojure(Script)"
-  :url "http://github.com/crisptrutski/matchbox"
+  :url "http://github.com/thosmos/matchbox"
   :license {:name "Eclipse Public License" :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :authors ["verma", "crisptrutski"]
+  :authors ["verma", "crisptrutski", "thosmos"]
 
   :dependencies
-  [[org.clojure/clojure "1.8.0" :scope "provided"]
-   [org.clojure/clojurescript "1.8.34" :scope "provided"]
-   [org.clojure/core.async "0.2.374" :scope "provided"]
-   [reagent "0.6.0-alpha" :scope "provided"]
+  [[org.clojure/clojure "1.9.0" :scope "provided"]
+   [org.clojure/clojurescript "1.10.238" :scope "provided"]
+   [org.clojure/core.async "0.4.474" :scope "provided"]
+   [reagent "0.8.0" :scope "provided"]
    [frankiesardo/linked "1.2.6" :scope "provided"]
-   [com.firebase/firebase-client-jvm "2.5.2" :exclusions [org.apache.httpcomponents/httpclient]]
-   [org.apache.httpcomponents/httpclient "4.5.2"]
-   [cljsjs/firebase "2.4.1-0"]
-   [org.clojure/tools.namespace "0.2.11" :scope "test"]]
+   [com.google.firebase/firebase-admin "6.0.0"
+    ;:exclusions
+    ;#_[com.google.protobuf/protobuf-java com.google.errorprone/error_prone_annotations
+    ; com.google.api/api-common com.google.auth/google-auth-library-credentials io.grpc/grpc-core
+    ; com.google.auth/google-auth-library-oauth2-http]
+    ]
+   [org.apache.httpcomponents/httpclient "4.5.5"]
+   [cljsjs/firebase "4.9.0-0"]
+   [org.clojure/tools.namespace "0.2.11" :scope "test"]
+   [doo "0.1.6"]]
 
   :aot [matchbox.clojure.android-stub]
 

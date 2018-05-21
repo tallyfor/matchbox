@@ -1,7 +1,10 @@
 (ns matchbox.serialization.plain
   (:require
     [clojure.walk :as walk]
-    [matchbox.utils :as utils])
+    ;[matchbox.utils :as utils]
+    ;[matchbox.serialization.serializer :refer [set-data-config!]]
+
+    )
   #?(:clj (:import (java.util HashMap ArrayList))))
 
 (defn hydrate-raw [x]
@@ -20,5 +23,5 @@
   #?(:clj (walk/stringify-keys v)
      :cljs (clj->js v)))
 
-(defn set-default! []
-  (utils/set-date-config! hydrate serialize))
+;(defn set-default! []
+;  (set-data-config! hydrate serialize))

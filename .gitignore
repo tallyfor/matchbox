@@ -15,3 +15,5 @@ pom.xml.asc
 .noderepl/*
 .nrepl-history
 docs/*
+.idea/
+*credentials.json

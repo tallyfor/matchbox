@@ -5,7 +5,7 @@
        [cljs.core.async.macros :refer [go]]))
   (:require
     [matchbox.core :as m]
-    [matchbox.testing :refer [db-uri random-ref]]
+    [matchbox.testing :refer [random-ref root-ref]]
     [matchbox.testing #?@(:clj  [:refer [is= round-trip= round-trip<]]
                           :cljs [:refer-macros [is= round-trip= round-trip<] :include-macros true])]
     #?(:clj [clojure.test :refer [deftest is testing]] :cljs [cljs.test])
@@ -60,19 +60,20 @@
   (testing "numbers"
     (round-trip= 42 42)
     (round-trip= 41.3 41.3)
-    ;; Floating point survives "JSON" phase
-    (round-trip= 41.0 41.0)
-    ;; Cast down from extended types though
-    (round-trip= 3.0 3N)
-    (round-trip< 4M value
-      #?(:clj  (is (instance? Double value))
-         :cljs (is (= js/Number (type value)))))
+    ;; Floating point survives "JSON" phase - NOT
+    (round-trip= 41 41.0)
+    ;; Cast down from extended types though - NOPE see this PR: https://github.com/firebase/firebase-admin-java/pull/85
+    ;(round-trip= 3.0 3N)
+    ;(round-trip< 4M value
+    ;  #?(:clj  (is (instance? Double value))
+    ;     :cljs (is (= js/Number (type value)))))
     ;; Unless the decimal portion is explicit..
-    (round-trip< 4.0M value
-      #?(:clj  (is (instance? Double value))
-         :cljs (is (= js/Number (type value)))))
-    #?(:clj
-       (round-trip= 4.3E90 4.3E90M)))
+    ;(round-trip< 4.0M value
+    ;  #?(:clj  (is (instance? Double value))
+    ;     :cljs (is (= js/Number (type value)))))
+    ;#?(:clj
+    ;   (round-trip= 4.3E90 4.3E90M))
+    )
 
   (testing "strings"
     (round-trip= "feeling myself" "feeling myself"))
@@ -93,14 +94,14 @@
   (testing "vector"
     (round-trip= [1 2 3 4] [1 2 3 4]))
 
-  (testing "set"
-    (round-trip< #{1 2 3 4} result
-      (is (vector? result))
-      (is (= [1 2 3 4] (sort result)))))
+  ;(testing "set" ;;; nope, must use a vector or list
+  ;  (round-trip< #{1 2 3 4} result
+  ;    (is (vector? result))
+  ;    (is (= [1 2 3 4] (sort result)))))
 
   (testing "richer data"
     (round-trip= {:a-field [2]} (ARecord. [2]))
-    (round-trip= {:an_attr [3]} (AType. #{3}))))
+    (round-trip= {:an_attr [3]} (AType. [3]))))
 
 
 (def ref-map

@@ -5,11 +5,14 @@
        :clj [clojure.test :refer [deftest is testing]])
     [matchbox.core :as m]
     [matchbox.atom :as a :refer [#?@(:clj [-deref -swap!])]]
+    [matchbox.testing :refer [random-ref]]
     [matchbox.registry :as mr]))
 
 (def r
   (delay
-    (let [r (m/connect "https://luminous-torch-5788.firebaseio.com" [(str (rand-int 1000)) "atom-test"])]
+    (let [ ;r ;(m/connect "https://luminous-torch-5788.firebaseio.com" [(str (rand-int 1000)) "atom-test"])
+          r (m/get-in (random-ref) "atom-test")
+          ]
       (m/reset! r nil)
       r)))
 
