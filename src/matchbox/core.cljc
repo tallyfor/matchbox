@@ -168,7 +168,7 @@
 
 #?(:clj
    (defn init-server-options
-     [^String credential-path ^String app-domain]
+     [^String app-domain ^String credential-path]
      (let [serviceAccount (FileInputStream. credential-path)]
        (.build
          (doto (FirebaseOptions$Builder.)

@@ -1,4 +1,4 @@
-(defproject thosmos/matchbox "0.1.0-SNAPSHOT"
+(defproject thosmos/matchbox "3.5.4-SNAPSHOT"
   :description "Firebase bindings for Clojure(Script)"
   :url "http://github.com/thosmos/matchbox"
   :license {:name "Eclipse Public License" :url "http://www.eclipse.org/legal/epl-v10.html"}
