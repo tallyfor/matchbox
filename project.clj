@@ -1,4 +1,4 @@
-(defproject thosmos/matchbox "3.5.4"
+(defproject tallyfor/matchbox "3.5.4"
   :description "Firebase bindings for Clojure(Script)"
   :url "http://github.com/thosmos/matchbox"
   :license {:name "Eclipse Public License" :url "http://www.eclipse.org/legal/epl-v10.html"}
