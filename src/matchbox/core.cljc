@@ -90,6 +90,7 @@
 (declare wrap-snapshot)
 (declare hydrate)
 (declare reset!)
+(declare serialize)
 
 (defn throw-fb-error [err & [msg]]
   (throw (ex-info (or msg "DatabaseError") {:err err})))
@@ -114,7 +115,7 @@
      (reify Transaction$Handler
        (^Transaction$Result doTransaction [_ ^MutableData d]
          (let [current (hydrate (.getValue d))]
-           (reset! d (apply f current args))
+           (.setValue d (serialize (apply f current args)))
            (Transaction/success d)))
        (^void onComplete [_ ^DatabaseError error, ^boolean committed, ^DataSnapshot d]
          (if (and cb (not error) committed)
@@ -168,7 +169,7 @@
 
 #?(:clj
    (defn init-server-options
-     [^String credential-path ^String app-domain]
+     [^String app-domain ^String credential-path]
      (let [serviceAccount (FileInputStream. credential-path)]
        (.build
          (doto (FirebaseOptions$Builder.)
