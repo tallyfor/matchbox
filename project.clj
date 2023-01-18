@@ -1,4 +1,4 @@
-(defproject tallyfor/matchbox "3.5.5"
+(defproject tallyfor/matchbox "3.5.6"
   :description "Firebase bindings for Clojure(Script)"
   :url "http://github.com/thosmos/matchbox"
   :license {:name "Eclipse Public License" :url "http://www.eclipse.org/legal/epl-v10.html"}
@@ -17,7 +17,7 @@
     ; com.google.auth/google-auth-library-oauth2-http]
     ]
    [org.apache.httpcomponents/httpclient "4.5.5"]
-   [cljsjs/firebase "4.9.0-0"]
+   [cljsjs/firebase "7.5.0-0"] ;;4.9.0-0
    [org.clojure/tools.namespace "0.2.11" :scope "test"]
    [doo "0.1.6"]]
 
