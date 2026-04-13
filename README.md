@@ -1,3 +1,5 @@
+> **Archived.** This repo has been internalized into the [tallyfor/balance](https://github.com/tallyfor/balance) monorepo at [`bases/voyage/src/clj/matchbox/`](https://github.com/tallyfor/balance/tree/main/bases/voyage/src/clj/matchbox). All future development happens there.
+
 # This is a fork to get cljsjs/firebase client v4.9 and Firebase-Admin 6.0.0 on the  server
 (the Android client support has not been looked at yet)
 
